@@ -1,0 +1,7 @@
+VERSION: "0.0.1",
+GAME_VERSION_MAJOR: 66,
+GAME_VERSION_MINOR: 49,
+NAME: "Fullscreen Mod",
+DESC: "This mod attempts to fix fullscreen issues on Linux",
+AUTHOR: "Bradylus",
+INFO: "",
