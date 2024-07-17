@@ -108,7 +108,6 @@ public class GraphicContext {
 
 		// other hints
 		glfwWindowHint(GLFW_SAMPLES, 0);
-		glfwWindowHint(GLFW_REFRESH_RATE, GLFW_DONT_CARE);
 		glfwWindowHint(GLFW_STEREO, GLFW_FALSE);
 		glfwWindowHint(GLFW_SRGB_CAPABLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
@@ -128,7 +127,6 @@ public class GraphicContext {
 
 		new Displays();
 		
-		
 		printSettings(sett);
 
 		Printer.ln("GRAPHICS");
@@ -137,7 +135,6 @@ public class GraphicContext {
 		int dispWidth = wanted.width;
 		int dispHeight = wanted.height;
 
-		
 		nativeWidth = sett.getNativeWidth();
 		nativeHeight = sett.getNativeHeight();
 
@@ -145,7 +142,6 @@ public class GraphicContext {
 		glfwWindowHint(GLFW_REFRESH_RATE, refreshRate);
 
 		if (!wanted.fullScreen) {
-
 			if (dispWidth > Displays.current(sett.monitor()).width
 					|| dispHeight > Displays.current(sett.monitor()).height) {
 				dispWidth = Displays.current(sett.monitor()).width;
@@ -160,27 +156,19 @@ public class GraphicContext {
 
 		// Is decoration wanted?
 		boolean dec = sett.decoratedWindow();
+		// decorate regardless of windowed/fullscreen since GLFW disables decorations for fullscreen windows.
+		glfwWindowHint(GLFW_DECORATED, dec ? GLFW_TRUE : GLFW_FALSE);
 		
 		boolean fullscreen = wanted.fullScreen || (displayWidth == Displays.current(sett.monitor()).width && displayHeight == Displays.current(sett.monitor()).height);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, sett.autoIconify() ? GLFW_TRUE : GLFW_FALSE);
-		// Decoration is excluded for fullscreen and for borderless (full size) windows
-		dec &= !wanted.fullScreen && displayWidth < Displays.current(sett.monitor()).width
-				&& displayHeight < Displays.current(sett.monitor()).height;
-		
-		
-
-		
-		glfwWindowHint(GLFW_DECORATED, dec ? GLFW_TRUE : GLFW_FALSE);
-		
-
+	
 		try {
-			Printer.ln("---attempting resolution: " + displayWidth + "x" + dispHeight + " " + wanted.fullScreen + " "
-					+ refreshRate + " " + sett.monitor());
+			Printer.ln("---attempting resolution: " + displayWidth + "x" + dispHeight + "@" + refreshRate + "Hz "
+					+ (fullscreen?(wanted.fullScreen?"fullscreen":"borderless"):"windowed") + " " + sett.monitor());
 			
 			// Monitor is specified for full screen and for borderless full-size
-			// Monitor is NULL for decorated windows
 			window = glfwCreateWindow(displayWidth, displayHeight, sett.getWindowName(),
-					wanted.fullScreen ? Displays.pointer(sett.monitor()) : NULL, NULL);
+					fullscreen ? Displays.pointer(sett.monitor()) : NULL, NULL);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw error.get();
