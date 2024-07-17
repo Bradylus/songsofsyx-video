@@ -1,5 +1,8 @@
 #!/bin/sh
 
+set -u
+
+# customiz these to match yout system
 JDKBINDIR="/usr/lib/jvm/java-8-openjdk/bin"
 GAMEDIR="${HOME}/opt/GOG Games/Songs of Syx/game"
 USERMODDIR="${HOME}/.local/share/songsofsyx/mods"
@@ -33,3 +36,8 @@ echo ":: Packaging mod in '${TARGET}/${MODNAME}.zip'"
 cd "${TARGET}"
 # 7z a -tzip -bb0 -bd "${MODNAME}.zip" "$MODNAME" >/dev/null
 zip -qr9 "${MODNAME}.zip" "${MODNAME}"
+
+if [ "${1:-}" = "run" ]; then
+  cd "${GAMEDIR}"
+  exec ./songsofsyx
+fi

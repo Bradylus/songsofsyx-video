@@ -141,14 +141,15 @@ public class GraphicContext {
 		refreshRate = wanted.refresh;
 		glfwWindowHint(GLFW_REFRESH_RATE, refreshRate);
 
+		DisplayMode current = Displays.current(sett.monitor());
 		if (!wanted.fullScreen) {
-			if (dispWidth > Displays.current(sett.monitor()).width
-					|| dispHeight > Displays.current(sett.monitor()).height) {
-				dispWidth = Displays.current(sett.monitor()).width;
-				dispHeight = Displays.current(sett.monitor()).height;
+			if (dispWidth > current.width
+					|| dispHeight > current.height) {
+				dispWidth = current.width;
+				dispHeight = current.height;
 			}
 
-			Printer.ln("---created window: " + dispWidth + " " + dispHeight);
+			Printer.ln("---creating window: " + dispWidth + "x" + dispHeight);
 
 		}
 		displayWidth = dispWidth;
@@ -159,12 +160,13 @@ public class GraphicContext {
 		// decorate regardless of windowed/fullscreen since GLFW disables decorations for fullscreen windows.
 		glfwWindowHint(GLFW_DECORATED, dec ? GLFW_TRUE : GLFW_FALSE);
 		
-		boolean fullscreen = wanted.fullScreen || (displayWidth == Displays.current(sett.monitor()).width && displayHeight == Displays.current(sett.monitor()).height);
+		boolean fullscreen = wanted.fullScreen || (displayWidth == current.width && displayHeight == current.height);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, sett.autoIconify() ? GLFW_TRUE : GLFW_FALSE);
 	
 		try {
-			Printer.ln("---attempting resolution: " + displayWidth + "x" + dispHeight + "@" + refreshRate + "Hz "
-					+ (fullscreen?(wanted.fullScreen?"fullscreen":"borderless"):"windowed") + " " + sett.monitor());
+			Printer.ln("---attempting resolution: " + displayWidth + "x" + dispHeight + ", " + refreshRate + "Hz, "
+					+ (fullscreen?(wanted.fullScreen?"fullscreen":"borderless"):"windowed")
+					+ ", monitor " + sett.monitor() + " (" + glfwGetMonitorName(Displays.pointer(sett.monitor())) + ")");
 			
 			// Monitor is specified for full screen and for borderless full-size
 			window = glfwCreateWindow(displayWidth, displayHeight, sett.getWindowName(),
@@ -185,8 +187,8 @@ public class GraphicContext {
 			// Decorated windows are now moved 1/4 into screen (see launcher window)
 			glfwGetMonitorPos(Displays.pointer(sett.monitor()), dx, dy);
 			if (!fullscreen && dec) {
-				int x1 = (Displays.current(sett.monitor()).width - displayWidth) / 4;
-				int y1 = (Displays.current(sett.monitor()).height - displayHeight) / 4;
+				int x1 = (current.width - displayWidth) / 4;
+				int y1 = (current.height - displayHeight) / 4;
 				if (x1 < 0)
 					x1 = 0;
 				if (y1 < 0)
@@ -213,14 +215,18 @@ public class GraphicContext {
 			throw error.get();
 		}
 
-		GLFWVidMode current = glfwGetVideoMode(glfwGetPrimaryMonitor());
-		Printer.ln("---Setting FPS to " + current.refreshRate());
+		long monitor = glfwGetWindowMonitor(window);
+		if (monitor == 0) {
+			monitor = glfwGetPrimaryMonitor();
+		}
+		GLFWVidMode vidMode = glfwGetVideoMode(monitor);
+		Printer.ln("---Setting FPS to " + vidMode.refreshRate());
 		int swapInterval = 0;
 
 		if (sett.getVSynchEnabled() || sett.vsyncAdaptive()) {
 			swapInterval = 1;
 			int r = refreshRate;
-			while (current.refreshRate() >= r * 2) {
+			while (vidMode.refreshRate() >= r * 2) {
 				r *= 2;
 				swapInterval++;
 			}
@@ -233,8 +239,14 @@ public class GraphicContext {
 
 		glfwSwapInterval(swapInterval);
 
-		Printer.ln("---created resolution: " + current.width() + "x" + current.height() + ", " + current.refreshRate()
-				+ "Hz" + (sett.getVSynchEnabled() ? ", vsync: " + swapInterval : ""));
+		{
+			int[] ww = new int[1];
+			int[] wh = new int[1];
+			glfwGetWindowSize(window, ww, wh);
+			Printer.ln("---created fullscreen window: " + ww[0] + "x" + wh[0] + ", " + vidMode.refreshRate()
+					+ "Hz, " + (glfwGetWindowMonitor(window) == 0 ? "windowed" : ("fullscreen, monitor " + glfwGetMonitorName(monitor)))
+					+ (sett.getVSynchEnabled() ? ", vsync: " + swapInterval : ""));
+		}
 		Printer.ln("---LWJGL: " + org.lwjgl.Version.getVersion());
 		Printer.ln("---GLFW: " + glfwGetVersionString());
 
