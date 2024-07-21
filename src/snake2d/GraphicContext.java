@@ -139,7 +139,8 @@ public class GraphicContext {
 		nativeHeight = sett.getNativeHeight();
 
 		refreshRate = wanted.refresh;
-		glfwWindowHint(GLFW_REFRESH_RATE, refreshRate);
+		// force refresh rate only for exclusive fullscreen
+		glfwWindowHint(GLFW_REFRESH_RATE, wanted.fullScreen?refreshRate:GLFW_DONT_CARE);
 
 		DisplayMode current = Displays.current(sett.monitor());
 		if (!wanted.fullScreen) {
@@ -180,24 +181,25 @@ public class GraphicContext {
 			throw error.get();
 		}
 
-		{
+		// move windows to the desired monitor
+		if (!fullscreen) {
 			int[] dx = new int[1];
 			int[] dy = new int[1];
-
-			// Decorated windows are now moved 1/4 into screen (see launcher window)
 			glfwGetMonitorPos(Displays.pointer(sett.monitor()), dx, dy);
-			if (!fullscreen && dec) {
-				int x1 = (current.width - displayWidth) / 4;
-				int y1 = (current.height - displayHeight) / 4;
-				if (x1 < 0)
-					x1 = 0;
-				if (y1 < 0)
-					y1 = 0;
-
-				if (sett.decoratedWindow())
-					y1 += 30;
-				glfwSetWindowPos(window, x1 + dx[0], y1 + dy[0]);
+			int x1 = (current.width - displayWidth) / 2;
+			int y1 = (current.height - displayHeight) / 2;
+			if (x1 < 0) {
+				x1 = 0;
 			}
+			if (y1 < 0) {
+				y1 = 0;
+			}
+			// Decorated windows are moved 1/4 into screen (see launcher window) instead of centered.
+			if (dec) {
+				x1 /= 2;
+				y1 = y1 / 2 + 30; // offset to account for window decorations
+			}
+			glfwSetWindowPos(window, x1 + dx[0], y1 + dy[0]);
 		}
 
 		String icons = sett.getIconFolder();
