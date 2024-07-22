@@ -245,7 +245,7 @@ public class GraphicContext {
 			int[] ww = new int[1];
 			int[] wh = new int[1];
 			glfwGetWindowSize(window, ww, wh);
-			Printer.ln("---created fullscreen window: " + ww[0] + "x" + wh[0] + ", " + vidMode.refreshRate()
+			Printer.ln("---created window: " + ww[0] + "x" + wh[0] + ", " + vidMode.refreshRate()
 					+ "Hz, " + (glfwGetWindowMonitor(window) == 0 ? "windowed" : ("fullscreen, monitor " + glfwGetMonitorName(monitor)))
 					+ (sett.getVSynchEnabled() ? ", vsync: " + swapInterval : ""));
 		}
