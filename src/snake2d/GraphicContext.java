@@ -160,7 +160,8 @@ public class GraphicContext {
 		boolean dec = sett.decoratedWindow();
 		// decorate regardless of windowed/fullscreen since GLFW disables decorations for fullscreen windows.
 		glfwWindowHint(GLFW_DECORATED, dec ? GLFW_TRUE : GLFW_FALSE);
-		
+
+		// fullscreen is true if we want either borderless fullscreen or exclusive.
 		boolean fullscreen = wanted.fullScreen || (displayWidth == current.width && displayHeight == current.height);
 		glfwWindowHint(GLFW_AUTO_ICONIFY, sett.autoIconify() ? GLFW_TRUE : GLFW_FALSE);
 	
